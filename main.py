@@ -9,9 +9,10 @@ def generate_empty_board(x,y):
     :param y: n of columns
     :return: lists of lists of zeros
     """
-    board = [[0]*y for i in range(x)]  #we create board that contains x lists containing y 0s
+    board = [[0]*y for i in range(x)] 
+    
+    return board
 
-    return board #we return board as a value of a function
 def generate_initial_population(board, n):
     """
     replaces n random zeroes with ones in given table
@@ -19,18 +20,19 @@ def generate_initial_population(board, n):
     :param n: number of cells to replace
     :return: transformed matrix
     """
-    if n > len(board)*len(board[0]): #if we want to put more cells on board than there is a space we break the program
+    if n > len(board)*len(board[0]): 
         print("More living cells than space on this board")
-        return board #in this case ive decided to return empty table
-    i = 0                           # variable i that will store number of already assigned ones
-    while i < n:                    # while i is smaller than number of cells to replace do this:
-        x = random.randint(0, len(board)-1) # x is a integer randomly choosen from range (0 (which stands for 1 element), and width of a board
-        y = random.randint(0, len(board[0])-1) # y is an integer randomly choosen from range 0 to the last element of height
-        if board[x][y] == 0: # if randomly choosen position is 0
-            board[x][y] = 1 #change it to one
-            i = i + 1 #and add 1 to i, so theres only n minus i iterations left
+        return board 
+    i = 0
+    while i < n:
+        x = random.randint(0, len(board)-1)
+        y = random.randint(0, len(board[0])-1)
+        if board[x][y] == 0:
+            board[x][y] = 1
+            i = i + 1
+            print("{}/{} filled.".format(i,n))
 
-    return board # returns value of a function as transformed board "generated random population"
+    return board
 def count_population(Tab):
     """
     counts number of alive cells
@@ -65,11 +67,11 @@ def evolve_population(board):
     :param board: board from present generation
     :return: new board after applying rules of game to each cell
     """
-    new_board = board                           #creates new board that will be modified (i copied old one so i dont have to think about size
-    for i in range(len(board)):                 #create i that iterates in range(0,lenght of list of lists)
-        for j in range(len(board[i])):          #create j tat iterates in range(0, lenght of list inside lists of lists)
-            if check_if_alive(i , j , board):   #your function check if alive takes the same arguments, buth different results
-                new_board[i][j] = 1             #so if/else isnt necessary (just replace new_board with value of my function)
+    new_board = generate_empty_board(len(board),len(board[0]))
+    for i in range(len(board)):
+        for j in range(len(board[i])):
+            if check_if_alive(i , j , board):
+                new_board[i][j] = 1
             else:
                 new_board[i][j] = 0
     return new_board
@@ -84,17 +86,15 @@ def check_if_alive(x, y, Tab):
     :param Tab: table of current frame
     :return: True if cell will be alive in the next fram False if not
     """
-
-    n = 0  # number of neibourghs
+    length = len(Tab) - 1
+    width = len(Tab[0]) - 1 
+    n = 0  # number of neighbouring living cells
     for i in [x - 1, x, x + 1]:  # count number of neigh
         for j in [y - 1, y, y + 1]:
-            if i < 0:
+
+            if i < 0 or j < 0:
                 continue
-            if j < 0:
-                continue
-            if i > len(Tab) - 1:
-                continue
-            if j > len(Tab[i]) - 1:
+            if i > length or j > width:
                 continue
             if (i == x and j == y):
                 continue
@@ -118,28 +118,54 @@ def print_board(board, n):
     :param n: number of generation
     :return: None
     """
-    print("Game of Life | Generation: ", n ," | Alive cells : ", count_population(board)," |")
+    print("Game of Life | Generation: {} | Alive cells : {} | Dead cells: {} | Size: {} |".format(n, count_population(board), len(board)*len(board[0])- count_population(board),  len(board)*len(board[0])))
+
+    print("+" +((len(board[0])*2)+1)*"-" + "+") #frame of board
     for i in range(len(board)):
-        for j in range(len(board[i])):
+        print("|", end=" ") #frame of board
+        for j in range(len(board[0])):
             if board[i][j] == 1:
-                print("#", end=" ")
+                print("%", end=" ")
             else:
                 print("-", end=" ")
-        print('')
+        print('|') #frame of board
+    print("+" +((len(board[0])*2)+1)*"-" + "+") #frame of board
     return
-x = int(input("what is the width"))
-y = int(input("what is the height"))
+
+
+
+x = int(input("Please insert width: "))
+y = int(input("Please insert height: "))
+
 board = generate_empty_board(x,y)
-initial = int(input("what is initial population"))
+initial = int(input("Please insert n of alive cells: "))
 board = generate_initial_population(board,initial)
-generation = 1
-while True:
-    print_board(board,generation)
-    board = evolve_population(board)
+#board = [[0,0,0,0,0,0,0,0,0,0]
+#        ,[0,0,0,0,0,0,0,0,0,0]
+#        ,[0,0,0,0,0,0,0,0,0,0]
+#        ,[0,0,0,0,0,0,0,0,0,0]
+#        ,[0,0,0,0,1,1,1,0,0,0]
+#        ,[0,0,0,0,1,0,0,0,0,0]
+#        ,[0,0,0,0,0,1,0,0,0,0]
+#        ,[0,0,0,0,0,0,0,0,0,0]
+#        ,[0,0,0,0,0,0,0,0,0,0]
+#        ,[0,0,0,0,0,0,0,0,0,0]]   glider pattern
+
+
+
+old_board = []
+generation = 0
+
+while not compare_generations(board,old_board):
     generation += 1
-    time.sleep(1)
+    print_board(board,generation)
+    old_board = board
+    board = evolve_population(board)
+    time.sleep(0.8)
+
+print("Game of Life ended after {} populations, with {} alive cells".format(generation, count_population(board)))
+
 # while True:
 #     board = evolve_population(board)
 #     print(*board, sep='\n', end='\n \n')
 #     time.sleep(1)
-
